@@ -1,1 +1,1 @@
-# proyecto-2-compiladores
+# proyecto-1-compiladores
