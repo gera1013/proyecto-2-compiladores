@@ -9,8 +9,6 @@ from dist.YAPLGrammerVisitor import YAPLGrammerVisitor
 
 scopes = []
 
-CHECKPOINT = 'NOW'
-
 class YAPLVisitor(YAPLGrammerVisitor):
     def visitProgram(self, ctx):
         self.recon = True
