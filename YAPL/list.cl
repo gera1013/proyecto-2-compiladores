@@ -31,20 +31,6 @@ class List {
 };
 
 
-(*
- *  Cons inherits all operations from List. We can reuse only the cons
- *  method though, because adding an element to the front of an emtpy
- *  list is the same as adding it to the front of a non empty
- *  list. All other methods have to be redefined, since the behaviour
- *  for them is different from the empty list.
- *
- *  Cons needs two attributes to hold the integer of this list
- *  cell and to hold the rest of the list.
- *
- *  The init() method is used by the cons() method to initialize the
- *  cell.
- *)
-
 class Cons inherits List {
 
    car : Int;	-- The element in this list cell
@@ -68,12 +54,6 @@ class Cons inherits List {
 };
 
 
-
-(*
- *  The Main class shows how to use the List class. It creates a small
- *  list and then repeatedly prints out its elements and takes off the
- *  first element of the list.
- *)
 
 class Main inherits IO {
 

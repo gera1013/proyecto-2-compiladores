@@ -108,7 +108,7 @@ class SymbolTableStack():
         return self.stack.pop()
 
     
-    def get_scope(self) -> SymbolTable:
+    def get_scope(self):
         return self.stack.top()
 
 
@@ -129,6 +129,15 @@ class SymbolTableStack():
 
     def empty(self):
         return self.stack.is_empty()
+
+    
+    def bottom(self):
+        copy = self.stack.copy()
+
+        while copy.get_size() > 1:
+            copy.pop()
+        
+        return copy.pop()
 
     
     def add_symbol(self, name, type):
@@ -230,8 +239,8 @@ class StructureList():
 
     
     def init_io(self, methods_table):
-        out_string = Method("out_string", YAPLTypes.OBJECT, [{"name": "out", "type": YAPLTypes.STRING}])
-        out_int = Method("out_int", YAPLTypes.OBJECT, [{"name": "out", "type": YAPLTypes.INT}])
+        out_string = Method("out_string", YAPLTypes.SELF_TYPE, [{"name": "out", "type": YAPLTypes.STRING}])
+        out_int = Method("out_int", YAPLTypes.SELF_TYPE, [{"name": "out", "type": YAPLTypes.INT}])
         in_string = Method("in_string", YAPLTypes.STRING, [])
         in_int = Method("in_int", YAPLTypes.INT, [])
         
