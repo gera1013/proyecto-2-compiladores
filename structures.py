@@ -1,4 +1,6 @@
+from collections import namedtuple
 from pickle import MEMOIZE
+from tkinter.tix import Form
 from constants import *
 from queue import LifoQueue
 
@@ -68,8 +70,12 @@ class Stack(object):
 
 
 class SymbolTable():
-    def __init__(self):
+    def __init__(self, title):
         self.table = {}
+        self.label_counter = 0
+        self.pointer = 0
+        self.title = title
+        self.temp_counter = 0
 
     
     def empty(self):
@@ -95,13 +101,30 @@ class SymbolTable():
         pass
 
 
+    def add_label(self):
+        self.label_counter += 1
+        return "LABEL_{}".format(self.label_counter)
+    
+    def add_temp(self):
+        self.temp_counter += 1
+        return "TEMP_{}".format(self.temp_counter)
+
+    
+    def get_pointer(self):
+        return self.pointer
+
+
+    def move_pointer(self, offset):
+        self.pointer += offset
+
+
 class SymbolTableStack():
     def __init__(self):
         self.stack = Stack()
         
 
-    def enter_scope(self):
-        self.stack.push(SymbolTable())
+    def enter_scope(self, title=None):
+        self.stack.push(SymbolTable(title))
 
 
     def exit_scope(self):
@@ -140,9 +163,12 @@ class SymbolTableStack():
         return copy.pop()
 
     
-    def add_symbol(self, name, type):
+    def add_symbol(self, name, type, size):
         current = self.stack.top()
-        current.table[name] = {"name": name, "type": type}
+
+        current.table[name] = {"name": name, "type": type, "size": size, "address": current.pointer, "scope": current.title}
+
+        if size != None: current.move_pointer(size)
 
 
 
@@ -151,36 +177,47 @@ class TypeTable():
         self.types = {
             YAPLTypes.SELF_TYPE : {
                 "name": YAPLTypes.SELF_TYPE,
-                "inherits": None
+                "inherits": None,
+                "size": 0
             },
             YAPLTypes.OBJECT: {
                 "name": YAPLTypes.OBJECT,
-                "inherits": None
+                "inherits": None,
+                "size": 0
             },
             YAPLTypes.INT: {
                 "name": YAPLTypes.INT,
-                "inherits": YAPLTypes.OBJECT
+                "inherits": YAPLTypes.OBJECT,
+                "size": 8
             },
             YAPLTypes.STRING: {
                 "name": YAPLTypes.STRING,
-                "inherits": YAPLTypes.OBJECT
+                "inherits": YAPLTypes.OBJECT,
+                "size": 8
             },
             YAPLTypes.BOOL: {
                 "name": YAPLTypes.BOOL,
-                "inherits": YAPLTypes.OBJECT
+                "inherits": YAPLTypes.OBJECT,
+                "size": 1
             },
             YAPLTypes.IO: {
                 "name": YAPLTypes.IO,
-                "inherits": YAPLTypes.OBJECT
+                "inherits": YAPLTypes.OBJECT,
+                "size": 0
             }
         }
 
 
-    def add_type(self, typename, inherits=None):
+    def add_type(self, typename, size, inherits=None):
         self.types[typename] = {
             "name": typename,
-            "inherits": inherits
+            "inherits": inherits,
+            "size": size
         }
+
+
+    def get_type_size(self, typename):
+        return self.types[typename]['size']
 
 
 
@@ -208,14 +245,16 @@ class Attribute():
 
 
 class Formal():
-    def __init__(self, name, type) -> None:
+    def __init__(self, name, type, scope, address):
         self.name = name
         self.type = type
+        self.scope = scope
+        self.address = address
 
 
 
 class StructureList():
-    def __init__(self, st) -> None:
+    def __init__(self, st):
         self.structure_type = st
         self.table = {}
 
@@ -229,7 +268,7 @@ class StructureList():
         if self.structure_type == YAPLStructures.ATTRIBUTE:
             struct = Attribute(args[0], args[1])
         if self.structure_type == YAPLStructures.ARGUMENT:
-            struct = Formal(args[0], args[1])
+            struct = Formal(args[0], args[1], args[2], args[3])
 
         self.table[struct.name] = struct
 
@@ -274,3 +313,13 @@ class StructureList():
         methods_table.table["length"] = length
         methods_table.table["concat"] = concat
         methods_table.table["sub_str"] = sub_str
+
+
+
+QUADRUPLE = namedtuple('QUADRUPLE', 'operator val1 val2 result')
+
+def create_quadruple(o, a1, a2, r):
+    return QUADRUPLE(o, a1, a2, r)
+
+fields = ('status', 'name', 'type', 'arguments', 'size', 'code', 'pointer', 'object')
+PAYLOAD = namedtuple('PAYLOAD', fields, defaults=(None,) * len(fields))
